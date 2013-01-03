@@ -50,7 +50,7 @@ class puppet::agent(
         exec { 'puppet_agent_start':
           command   => '/usr/bin/nohup puppet agent &',
           refresh   => '/usr/bin/pkill puppet && /usr/bin/nohup puppet agent &',
-          unless    => '/bin/ps -ef | grep -v grep | /bin/grep \'puppet agent\'',
+          unless    => "/bin/ps -ef | grep -v grep | /bin/grep \'puppet agent\'",
           require   => File['/etc/puppet/puppet.conf'],
           subscribe => Package[$puppet_agent_name],
         }
@@ -100,7 +100,7 @@ class puppet::agent(
 
     }
     default: {
-      err 'Unsupported puppet run style in Class[\'puppet::agent\']'
+      err "Unsupported puppet run style in Class[\'puppet::agent\']"
     }
 
   }

@@ -187,7 +187,7 @@ class puppet::master (
     exec { 'puppet_master_start':
       command   => '/usr/bin/nohup puppet master &',
       refresh   => '/usr/bin/pkill puppet && /usr/bin/nohup puppet master &',
-      unless    => '/bin/ps -ef | grep -v grep | /bin/grep \'puppet master\'',
+      unless    => "/bin/ps -ef | grep -v grep | /bin/grep \'puppet master\'",
       require   => File['/etc/puppet/puppet.conf'],
       subscribe => Package[$puppet_master_package],
     }
