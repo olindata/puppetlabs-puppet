@@ -25,6 +25,7 @@ class puppet::params {
   $storeconfigs_dbpassword          = 'password'
   $storeconfigs_dbserver            = 'localhost'
   $storeconfigs_dbsocket            = '/var/run/mysqld/mysqld.sock'
+  $storeconfigs_dbport              = '3306'
   $certname                         = $::fqdn
   $confdir                          = '/etc/puppet'
   $manifest                         = '/etc/puppet/manifests/site.pp'
@@ -33,6 +34,9 @@ class puppet::params {
   $puppet_passenger_port            = '8140'
   $puppet_agent_enabled             = true
   $apache_serveradmin               = 'root'
+
+  $puppetdb_terminus_package        = 'puppetdb-terminus'
+  $puppetdb_terminus_version        = 'latest'
 
   case $::operatingsystem {
     'centos', 'redhat', 'fedora': {
@@ -46,6 +50,7 @@ class puppet::params {
       $puppet_conf                  = '/etc/puppet/puppet.conf'
       $puppet_vardir                = '/var/lib/puppet'
       $puppet_ssldir                = '/var/lib/puppet/ssl'
+      $activerecord_package         = 'rubygem-activerecord'
     }
     'ubuntu', 'debian': {
       $puppet_master_package        = 'puppet'
@@ -58,6 +63,7 @@ class puppet::params {
       $puppet_conf                  = '/etc/puppet/puppet.conf'
       $puppet_vardir                = '/var/lib/puppet'
       $puppet_ssldir                = '/var/lib/puppet/ssl'
+      $activerecord_package         = 'ruby-activerecord'
     }
     'freebsd': {
       $puppet_agent_service         = 'puppet'

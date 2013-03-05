@@ -1,0 +1,11 @@
+[<%= @name %>]
+path <%= @path %>
+<% @allow.each do |allow_line| -%>
+allow <%= allow_line %>
+<% end -%>
+<% if @deny -%>
+<% @deny.each do |deny_line| -%>
+deny <%= deny_line %>
+<% end -%>
+<% end -%>
+

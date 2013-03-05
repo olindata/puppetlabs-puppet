@@ -1,31 +1,53 @@
 LoadModule ssl_module modules/mod_ssl.so
-
+<% if @puppet_central_ca -%>
+LoadModule proxy_http_module modules/mod_proxy_http.so
+<% end -%>
 Listen <%= puppet_passenger_port %>
 
 <VirtualHost *:<%= puppet_passenger_port %>>
-				ServerName <%= puppet_site %>
-        SSLEngine on
-        SSLProtocol -ALL +SSLv3 +TLSv1
-        SSLCipherSuite ALL:!ADH:RC4+RSA:+HIGH:+MEDIUM:-LOW:-SSLv2:-EXP
+  ServerName <%= puppet_site %>
+  SSLEngine on
+  SSLProtocol -ALL +SSLv3 +TLSv1
+  SSLCipherSuite ALL:!ADH:RC4+RSA:+HIGH:+MEDIUM:-LOW:-SSLv2:-EXP
 
-        SSLCertificateFile      <%= puppet_ssldir %>/certs/<%= certname %>.pem
-        SSLCertificateKeyFile   <%= puppet_ssldir %>/private_keys/<%= certname %>.pem
-        SSLCertificateChainFile <%= puppet_ssldir %>/ca/ca_crt.pem
-        SSLCACertificateFile    <%= puppet_ssldir %>/ca/ca_crt.pem
-        # If Apache complains about invalid signatures on the CRL, you can try disabling
-        # CRL checking by commenting the next line, but this is not recommended.
-        # SSLCARevocationFile     <%= puppet_ssldir %>/ca/ca_crl.pem
-        SSLCARevocationPath     <%= puppet_ssldir %>/ca/
-        SSLVerifyClient optional
-        SSLVerifyDepth  1
-        SSLOptions +StdEnvVars
+  SSLCertificateFile      <%= puppet_ssldir %>/certs/<%= certname %>.pem
+  SSLCertificateKeyFile   <%= puppet_ssldir %>/private_keys/<%= certname %>.pem
+  SSLCertificateChainFile <%= puppet_ssldir %>/ca/ca_crt.pem
+  SSLCACertificateFile    <%= puppet_ssldir %>/ca/ca_crt.pem
+  SSLCARevocationFile     <%= puppet_ssldir %>/ca/ca_crl.pem
+  SSLVerifyClient         optional
+  SSLVerifyDepth          1
+  SSLOptions              +StdEnvVars
 
-        DocumentRoot <%= puppet_docroot %>
-        RackBaseURI /
-        <Directory /etc/puppet/rack/>
-                Options None
-                AllowOverride None
-                Order allow,deny
-                allow from all
-        </Directory>
+
+  RequestHeader unset X-Forwarded-For
+
+  RequestHeader set X-SSL-Subject %{SSL_CLIENT_S_DN}e
+  RequestHeader set X-Client-DN %{SSL_CLIENT_S_DN}e
+  RequestHeader set X-Client-Verify %{SSL_CLIENT_VERIFY}e
+
+  DocumentRoot <%= puppet_docroot %>
+  RackBaseURI /
+  <Directory /etc/puppet/rack/>
+    Options None
+    AllowOverride None
+    Order allow,deny
+    Allow from all
+  </Directory>
+<% if @puppet_central_ca -%>
+
+  ProxyRequests Off
+  <Proxy *>
+    Order allow,deny
+<% @proxy_allow_from.each do |host| -%>
+    Allow from <%= host %>
+<% end -%>
+  </Proxy>
+
+  ProxyVia On
+
+  SSLProxyEngine On
+  ProxyPassMatch ^/([^/]+/certificate.*)$ <%= @puppet_central_ca %>/$1
+<% end -%>
 </VirtualHost>
+
