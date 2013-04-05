@@ -78,6 +78,7 @@ class puppet::master (
   $dashboard_port = 3000,
   $puppet_passenger = false,
   $puppet_site = $::puppet::params::puppet_site,
+  $puppet_site_email = $::puppet::params::puppet_site_email,
   $puppet_docroot = $::puppet::params::puppet_docroot,
   $puppet_vardir = $::puppet::params::puppet_vardir,
   $puppet_passenger_port = false,
@@ -118,29 +119,30 @@ class puppet::master (
 
   if $puppet_passenger {
     $service_notify  = Service['httpd']
-    $service_require = [Package[$puppet_master_package], Class['passenger']]
+    $service_require = [Package[$puppet_master_package], Class['apache::mod::passenger']]
 
     exec { "Certificate_Check":
       command   => "puppet cert --generate ${certname} --trace",
       unless    => "/bin/ls ${puppet_ssldir}/certs/${certname}.pem",
       path      => "/usr/bin:/usr/local/bin",
-      before    => Class['::passenger'],
+      before    => Class['apache::mod::passenger'],
       require   => Package[$puppet_master_package],
       logoutput => on_failure,
     }
 
-    if ! defined(Class['passenger']) {
-      class { '::passenger': }
+    if ! defined(Class['apache::mod::passenger']) {
+      class { 'apache::mod::passenger': }
     }
 
     apache::vhost { "puppet-${puppet_site}":
-      servername => $puppet_site,
-      port       => $puppet_passenger_port,
-      priority   => '40',
-      docroot    => $puppet_docroot,
-      template   => 'puppet/apache2.conf.erb',
-      require    => [ File["${confdir}/rack/config.ru"], File[$puppet_conf] ],
-      ssl        => true,
+      servername  => $puppet_site,
+      serveradmin => $puppet_site_email,
+      port        => $puppet_passenger_port,
+      priority    => '40',
+      docroot     => $puppet_docroot,
+      template    => 'puppet/apache2.conf.erb',
+      require     => [ File["${confdir}/rack/config.ru"], File[$puppet_conf] ],
+      ssl         => true,
     }
 
     file { "${confdir}/rack":

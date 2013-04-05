@@ -26,6 +26,7 @@ class puppet::params {
   $manifest                         = '/etc/puppet/manifests/site.pp'
   $templatedir                      = '$confdir/templates'
   $puppet_site                      = $::fqdn
+  $puppet_site_email                = 'admin@olindata.com'
   $puppet_docroot                   = '/etc/puppet/rack/public/'
   $puppet_passenger_port            = '8140'
 
