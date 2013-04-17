@@ -89,8 +89,7 @@ class puppet::master (
   $paternalistic = true,
   $user_id = undef,
   $group_id = undef,
-
-) inherits puppet::params {
+) inherits puppet::agent {
 
   include concat::setup
 

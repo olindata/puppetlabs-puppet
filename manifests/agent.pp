@@ -26,6 +26,11 @@ class puppet::agent (
   $user_id              = undef,
   $group_id             = undef,) inherits puppet::params {
 
+  class { 'puppet::common':
+    user_id  => $user_id,
+    group_id => $group_id,
+  }
+
   if $::kernel == "Linux" {
     file { $puppet_defaults:
       mode   => '0644',

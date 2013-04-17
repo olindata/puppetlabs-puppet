@@ -130,10 +130,6 @@ class puppet (
 
 ) inherits puppet::params {
   
-  class { 'puppet::common':
-    user_id  => $user_id,
-    group_id => $group_id,
-  }
 
   include concat::setup
 
@@ -180,6 +176,8 @@ class puppet (
       package_provider          => $package_provider,
       dashboard_port            => $dashboard_port,
       paternalistic             => $paternalistic,
+      user_id                   => $user_id,
+      group_id                  => $group_id,  
     }
   }
 
@@ -194,6 +192,8 @@ class puppet (
       puppet_agent_name         => $puppet_agent_name,
       package_provider          => $package_provider,
       reporting                 => $reporting,
+      user_id                   => $user_id,
+      group_id                  => $group_id,  
     }
   }
 
