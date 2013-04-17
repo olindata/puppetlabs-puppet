@@ -43,7 +43,9 @@ class puppet::agent (
     package { $puppet_agent_name:
       ensure   => $version,
       provider => $package_provider,
+      before   => File[$confdir], 
     }
+
   }
 
   case $puppet_run_style {
@@ -99,11 +101,6 @@ class puppet::agent (
     default   : {
       err("Unsupported puppet run style in Class[\'puppet::agent\']")
     }
-  }
-
-  File[$confdir] {
-    require +> Package[$puppet_agent_name],
-    notify  +> $service_notify
   }
 
   Concat <| title == $puppet_conf |> {
