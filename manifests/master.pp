@@ -121,7 +121,9 @@ class puppet::master (
     package { $puppet_master_package:
       ensure   => $version,
       provider => $package_provider,
+      before   => File[$confdir], 
     }
+        
   }
 
   if $puppet_passenger {
@@ -196,10 +198,6 @@ class puppet::master (
     notify       => $service_notify,
   }
 
-  File [$confdir] {
-    require +> Package[$puppet_master_package],
-    notify  +> $service_notify
-  }
 
 }
 
