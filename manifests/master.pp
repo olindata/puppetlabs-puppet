@@ -60,37 +60,35 @@
 #  }
 #
 class puppet::master (
-  $modulepath = $::puppet::params::modulepath,
-  $confdir = $::puppet::params::confdir,
-  $puppet_conf = $::puppet::params::puppet_conf,
-  $manifest = $::puppet::params::manifest,
-  $templatedir = $::puppet::params::templatedir,
-  $reporting = true,
-  $storeconfigs = false,
-  $storeconfigs_dbadapter = $::puppet::params::storeconfigs_dbadapter,
-  $storeconfigs_dbuser = $::puppet::params::storeconfigs_dbuser,
+  $modulepath              = $::puppet::params::modulepath,
+  $confdir                 = $::puppet::params::confdir,
+  $puppet_conf             = $::puppet::params::puppet_conf,
+  $manifest                = $::puppet::params::manifest,
+  $templatedir             = $::puppet::params::templatedir,
+  $reporting               = true,
+  $storeconfigs            = false,
+  $storeconfigs_dbadapter  = $::puppet::params::storeconfigs_dbadapter,
+  $storeconfigs_dbuser     = $::puppet::params::storeconfigs_dbuser,
   $storeconfigs_dbpassword = $::puppet::params::storeconfigs_dbpassword,
-  $storeconfigs_dbserver = $::puppet::params::storeconfigs_dbserver,
-  $storeconfigs_dbsocket = $::puppet::params::storeconfigs_dbsocket,
-  $install_mysql_pkgs = $::puppet::params::puppet_storeconfigs_packages,
-  $certname = $::fqdn,
-  $autosign = false,
-  $dashboard_port = 3000,
-  $puppet_passenger = false,
-  $puppet_site = $::puppet::params::puppet_site,
-  $puppet_site_email = $::puppet::params::puppet_site_email,
-  $puppet_docroot = $::puppet::params::puppet_docroot,
-  $puppet_vardir = $::puppet::params::puppet_vardir,
-  $puppet_passenger_port = false,
-  $puppet_master_package = $::puppet::params::puppet_master_package,
-  $package_provider = undef,
-  $puppet_master_service = $::puppet::params::puppet_master_service,
-  $version = 'present',
-  $paternalistic = true,
-  $user_id = undef,
-  $group_id = undef,
-) inherits puppet::agent {
-
+  $storeconfigs_dbserver   = $::puppet::params::storeconfigs_dbserver,
+  $storeconfigs_dbsocket   = $::puppet::params::storeconfigs_dbsocket,
+  $install_mysql_pkgs      = $::puppet::params::puppet_storeconfigs_packages,
+  $certname                = $::fqdn,
+  $autosign                = false,
+  $dashboard_port          = 3000,
+  $puppet_passenger        = false,
+  $puppet_site             = $::puppet::params::puppet_site,
+  $puppet_site_email       = $::puppet::params::puppet_site_email,
+  $puppet_docroot          = $::puppet::params::puppet_docroot,
+  $puppet_vardir           = $::puppet::params::puppet_vardir,
+  $puppet_passenger_port   = false,
+  $puppet_master_package   = $::puppet::params::puppet_master_package,
+  $package_provider        = undef,
+  $puppet_master_service   = $::puppet::params::puppet_master_service,
+  $version                 = 'present',
+  $paternalistic           = true,
+  $user_id                 = undef,
+  $group_id                = undef,) inherits puppet::agent {
   include concat::setup
 
   File {
@@ -111,17 +109,17 @@ class puppet::master (
     }
   }
 
-  if ! defined(Package[$puppet_master_package]) {
+  if !defined(Package[$puppet_master_package]) {
     package { $puppet_master_package:
       ensure   => $version,
       provider => $package_provider,
-      before   => File[$confdir], 
+      before   => File[$confdir],
     }
-        
+
   }
 
   if $puppet_passenger {
-    $service_notify  = Service['httpd']
+    $service_notify = Service['httpd']
     $service_require = [Package[$puppet_master_package], Class['apache::mod::passenger']]
 
     exec { "Certificate_Check":
@@ -133,7 +131,7 @@ class puppet::master (
       logoutput => on_failure,
     }
 
-    if ! defined(Class['apache::mod::passenger']) {
+    if !defined(Class['apache::mod::passenger']) {
       class { 'apache::mod::passenger': }
     }
 
@@ -144,7 +142,7 @@ class puppet::master (
       priority    => '40',
       docroot     => $puppet_docroot,
       template    => 'puppet/apache2.conf.erb',
-      require     => [ File["${confdir}/rack/config.ru"], File[$puppet_conf] ],
+      require     => [File["${confdir}/rack/config.ru"], File[$puppet_conf]],
       ssl         => true,
     }
 
@@ -154,13 +152,12 @@ class puppet::master (
     }
 
     file { "${confdir}/rack/config.ru":
-      ensure => present,
-      source => $puppet::params::rack_config_source,
-      mode   => '0644',
+      ensure  => present,
+      source  => $puppet::params::rack_config_source,
+      mode    => '0644',
       require => Package[$puppet_master_package],
     }
   } else {
-
     $service_require = Package[$puppet_master_package]
     $service_notify = Exec['puppet_master_start']
 
@@ -180,7 +177,7 @@ class puppet::master (
     notify  => $service_notify,
   }
 
-  Concat<| title == $puppet_conf |> {
+  Concat <| title == $puppet_conf |> {
     require => $service_require,
     notify  +> $service_notify,
   }
@@ -191,7 +188,6 @@ class puppet::master (
     recurselimit => '1',
     notify       => $service_notify,
   }
-
 
 }
 
