@@ -90,6 +90,8 @@ class puppet::master (
 
 ) inherits puppet::params {
 
+  include puppet::common
+
   include concat::setup
 
   File {

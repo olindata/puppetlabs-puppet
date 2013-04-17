@@ -22,6 +22,8 @@ class puppet::agent(
   $version = 'present'
 ) inherits puppet::params {
 
+  include puppet::common
+
   if $::kernel == "Linux" {
     file { $puppet_defaults:
       mode   => '0644',
