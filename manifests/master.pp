@@ -96,6 +96,8 @@ class puppet::master (
     owner   => 'puppet',
     group   => 'puppet',
   }
+  
+  $puppet_ssldir = $::puppet::params::puppet_ssldir
 
   if $storeconfigs {
     class { 'puppet::storeconfigs':
@@ -133,6 +135,14 @@ class puppet::master (
     if !defined(Class['apache::mod::passenger']) {
       class { 'apache::mod::passenger': }
     }
+    
+    # In puppet 3.x scope.lookupvar doesn't work anymore, hence we have to make 
+    # all variables in the template local     
+    
+    $certname = $::puppet::params::certname
+    $puppet_ssldir = $::puppet::params::puppet_ssldir
+    $confdir = $::puppet::params::confdir
+
 
     apache::vhost { "puppet-${puppet_site}":
       servername  => $puppet_site,

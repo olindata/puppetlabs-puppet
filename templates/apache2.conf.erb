@@ -1,11 +1,8 @@
-<%-
-	puppet_ssldir = scope.lookupvar('puppet::puppet_ssldir')
-%>
 <%- if @osfamily != 'Debian' %>
 LoadModule ssl_module modules/mod_ssl.so
 <%- end %>
 
-Listen <%= port %>
+Listen <%= puppet_passenger_port %>
 
 <VirtualHost <%= vhost_name %>:<%= port %>>
 	ServerName <%= srvname %>
@@ -13,8 +10,8 @@ Listen <%= port %>
 	SSLProtocol -ALL +SSLv3 +TLSv1
 	SSLCipherSuite ALL:!ADH:RC4+RSA:+HIGH:+MEDIUM:-LOW:-SSLv2:-EXP
 
-	SSLCertificateFile      <%= puppet_ssldir %>/certs/<%= scope.lookupvar('puppet::certname') %>.pem
-	SSLCertificateKeyFile   <%= puppet_ssldir %>/private_keys/<%= scope.lookupvar('puppet::certname') %>.pem
+	SSLCertificateFile      <%= puppet_ssldir %>/certs/<%= certname %>.pem
+	SSLCertificateKeyFile   <%= puppet_ssldir %>/private_keys/<%= certname %>.pem
 	SSLCertificateChainFile <%= puppet_ssldir %>/certs/ca.pem
 	SSLCACertificateFile    <%= puppet_ssldir %>/certs/ca.pem
 	# If Apache complains about invalid signatures on the CRL, you can try disabling
@@ -26,7 +23,7 @@ Listen <%= port %>
 
 	DocumentRoot <%= docroot %>
 	RackBaseURI /
-	<Directory <%= scope.lookupvar('puppet::confdir') %>/rack/>
+	<Directory <%= confdir %>/rack/>
 		Options None
 		AllowOverride None
 		Order allow,deny
