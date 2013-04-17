@@ -139,9 +139,7 @@ class puppet::master (
     # In puppet 3.x scope.lookupvar doesn't work anymore, hence we have to make 
     # all variables in the template local     
     
-    $certname = $::puppet::params::certname
     $puppet_ssldir = $::puppet::params::puppet_ssldir
-    $confdir = $::puppet::params::confdir
 
 
     apache::vhost { "puppet-${puppet_site}":
