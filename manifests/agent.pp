@@ -25,7 +25,6 @@ class puppet::agent (
   $puppet_run_interval  = 30,
   $user_id              = undef,
   $group_id             = undef,) inherits puppet::params {
-
   class { 'puppet::common':
     user_id  => $user_id,
     group_id => $group_id,
@@ -44,7 +43,7 @@ class puppet::agent (
     package { $puppet_agent_name:
       ensure   => $version,
       provider => $package_provider,
-      before   => File[$confdir], 
+      before   => File[$confdir],
     }
 
   }
@@ -74,6 +73,11 @@ class puppet::agent (
         }
       }
 
+      Concat <| title == $puppet_conf |> {
+        require => Package['puppet'],
+        notify  +> $puppet::agent::service_notify,
+      }
+
     }
     'cron'    : {
       # ensure that puppet is running and will start up on boot
@@ -98,15 +102,15 @@ class puppet::agent (
         hour    => '*',
         minute  => [$time1, $time2],
       }
+
+      Concat <| title == $puppet_conf |> {
+        require => Package['puppet'],
+      }
+
     }
     default   : {
       err("Unsupported puppet run style in Class[\'puppet::agent\']")
     }
-  }
-
-  Concat <| title == $puppet_conf |> {
-    require => Package['puppet'],
-    notify  +> $puppet::agent::service_notify,
   }
 
   concat::fragment { 'puppet.conf-agent':
