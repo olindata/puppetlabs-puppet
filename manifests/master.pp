@@ -87,10 +87,15 @@ class puppet::master (
   $puppet_master_service = $::puppet::params::puppet_master_service,
   $version = 'present',
   $paternalistic = true,
+  $user_id = undef,
+  $group_id = undef,
 
 ) inherits puppet::params {
 
-  include puppet::common
+  class { 'puppet::common':
+    user_id  => $user_id,
+    group_id => $group_id,
+  }
 
   include concat::setup
 

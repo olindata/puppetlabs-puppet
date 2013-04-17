@@ -19,10 +19,15 @@ class puppet::agent(
   $puppet_conf = $::puppet::params::puppet_conf,
   $package_provider = undef,
   $reporting = true,
-  $version = 'present'
+  $version = 'present',
+  $user_id = undef,
+  $group_id = undef,
 ) inherits puppet::params {
 
-  include puppet::common
+  class { 'puppet::common':
+    user_id  => $user_id,
+    group_id => $group_id,
+  }
 
   if $::kernel == "Linux" {
     file { $puppet_defaults:
