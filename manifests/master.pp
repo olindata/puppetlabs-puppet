@@ -92,11 +92,6 @@ class puppet::master (
 
 ) inherits puppet::params {
 
-  class { 'puppet::common':
-    user_id  => $user_id,
-    group_id => $group_id,
-  }
-
   include concat::setup
 
   File {

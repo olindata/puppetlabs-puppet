@@ -25,10 +25,6 @@ class puppet::agent (
   $puppet_run_interval  = 30,
   $user_id              = undef,
   $group_id             = undef,) inherits puppet::params {
-  class { 'puppet::common':
-    user_id  => $user_id,
-    group_id => $group_id,
-  }
 
   if $::kernel == "Linux" {
     file { $puppet_defaults:
