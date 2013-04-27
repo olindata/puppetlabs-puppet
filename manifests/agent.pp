@@ -96,7 +96,7 @@ class puppet::agent (
       $time2 = fqdn_rand($puppet_run_interval) + 30
 
       cron { 'puppet-client':
-        command => '/usr/sbin/puppet agent --no-daemonize --onetime --logdest syslog > /dev/null 2>&1',
+        command => "${puppet::params::puppet_dir} agent --no-daemonize --onetime --logdest syslog > /dev/null 2>&1",
         user    => 'root',
         # run twice an hour, at a random minute in order not to collectively stress the puppetmaster
         hour    => '*',

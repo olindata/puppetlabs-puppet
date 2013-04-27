@@ -26,7 +26,7 @@ class puppet::params {
   $manifest                         = '/etc/puppet/manifests/site.pp'
   $templatedir                      = '$confdir/templates'
   $puppet_site                      = $::fqdn
-  $puppet_site_email                = 'admin@olindata.com'
+  $puppet_site_email                = 'root'
   $puppet_docroot                   = '/etc/puppet/rack/public/'
   $puppet_passenger_port            = '8140'
 
@@ -40,6 +40,7 @@ class puppet::params {
       $puppet_dashboard_report      = ''
       $puppet_storeconfigs_packages = 'mysql-devel'
       $puppet_conf                  = '/etc/puppet/puppet.conf'
+      $puppet_dir                   = '/usr/sbin/puppet'
       $puppet_logdir                = '/var/log/puppet'
       $puppet_vardir                = '/var/lib/puppet'
       $puppet_ssldir                = '/var/lib/puppet/ssl'
@@ -54,6 +55,7 @@ class puppet::params {
       $puppet_dashboard_report      = '/usr/lib/ruby/1.8/puppet/reports/puppet_dashboard.rb'
       $puppet_storeconfigs_packages = 'libmysql-ruby'
       $puppet_conf                  = '/etc/puppet/puppet.conf'
+      $puppet_dir                   = '/usr/bin/puppet'
       $puppet_logdir                = '/var/log/puppet'
       $puppet_vardir                = '/var/lib/puppet'
       $puppet_ssldir                = '/var/lib/puppet/ssl'
