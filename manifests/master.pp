@@ -88,7 +88,13 @@ class puppet::master (
   $version                 = 'present',
   $paternalistic           = true,
   $user_id                 = undef,
-  $group_id                = undef,) inherits puppet::agent {
+  $group_id                = undef,
+  $puppet_server           = $::puppet::params::puppet_server,
+  ) {
+  class { 'puppet::agent':
+      puppet_server => $puppet_server
+  }
+
   include concat::setup
 
   File {

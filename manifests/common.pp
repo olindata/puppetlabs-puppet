@@ -1,4 +1,4 @@
-class puppet::common($user_id, $group_id) inherits puppet::params {
+class puppet::common($user_id = undef, $group_id = undef) inherits puppet::params {
   user { 'puppet':
     ensure => present,
     uid    => $user_id,

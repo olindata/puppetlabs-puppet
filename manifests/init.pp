@@ -151,6 +151,7 @@ class puppet (
 
   if $master {
     class {'puppet::master':
+      puppet_server             => $puppet_server,
       version                   => $version,
       confdir                   => $confdir,
       puppet_conf               => $puppet_conf,
