@@ -32,7 +32,7 @@ class puppet::params {
 
   case $::operatingsystem {
     'centos', 'redhat', 'fedora': {
-      $puppet_master_package        = 'puppet'
+      $puppet_master_package        = 'puppet-server'
       $puppet_master_service        = 'puppetmaster'
       $puppet_agent_service         = 'puppet'
       $puppet_agent_name            = 'puppet'
