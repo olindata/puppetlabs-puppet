@@ -37,7 +37,8 @@ class puppet::passenger(
   $puppet_conf,
   $puppet_ssldir,
   $certname,
-  $conf_dir
+  $conf_dir,
+  $passenger_version = $::puppet::params::passengerversion,
 ){
   include apache
   include puppet::params
@@ -115,10 +116,20 @@ class puppet::passenger(
   }
 
   #Hack to add extra passenger configurations for puppetmaster
+  case $passenger_version {
+    3, 4: {
+      $template = "puppet/puppet_passenger${::puppet::params::passengerversion}.conf.erb"    
+    }
+    default: { 
+      fail("this version of passenger is not supported")
+    }
+  }
+  
+  
   file { 'puppet_passenger.conf':
     ensure  => file,
     path    => "${apache::mod_dir}/puppet_passenger.conf",
-    content => template('puppet/puppet_passenger.conf.erb'),
+    content => template($template),
     notify  => Service['httpd'],
   }
 
