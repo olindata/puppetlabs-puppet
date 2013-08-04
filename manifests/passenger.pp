@@ -118,7 +118,7 @@ class puppet::passenger(
   #Hack to add extra passenger configurations for puppetmaster
   case $passenger_version {
     3, 4: {
-      $template = "puppet/puppet_passenger${::puppet::params::passengerversion}.conf.erb"    
+      $template = "puppet/puppet_passenger${passenger_version}.conf.erb"    
     }
     default: { 
       fail("this version of passenger is not supported")
