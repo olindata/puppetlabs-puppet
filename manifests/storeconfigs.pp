@@ -1,55 +1,51 @@
-# Class: puppet::storeconfiguration
+# Class: puppet::storeconfigs
 #
-# This class installs and configures Puppet's stored configuration capability
+# This class installs and configures the puppetdb terminus pacakge
 #
 # Parameters:
+#   ['puppet_confdir']           - The config directory of puppet
+#   ['puppet_service']           - The service needing to be notified of the change puppetmasterd or httpd
+#   ['puppet_master_package']    - The name of the puppetmaster pacakge
+#   ['dbport']                   - The port of the puppetdb
+#   ['dbserver']                 - The dns name of the puppetdb server
+#   ['puppet_conf']              - The puppet config file
+#   ['puppetdb_startup_timeout'] - The time out for puppetdb
 #
 # Actions:
+# - Configures the puppet to use stored configs
 #
 # Requires:
+# - Inifile
+# - Class['puppet::storeconfigs']
 #
 # Sample Usage:
+#   class { 'puppet::storeconfigs':
+#       puppet_service             => Service['httpd'],
+#       dbport                     => 8081,
+#       dbserver                   => 'localhost'
+#       puppet_master_package      => 'puppetmaster'
+#   }
 #
-class puppet::storeconfigs (
-  $dbadapter        = $puppet::params::storeconfigs_dbadapter,
-  $dbuser           = $puppet::params::storeconfigs_dbuser,
-  $dbpassword       = $puppet::params::storeconfigs_dbpassword,
-  $dbserver         = $puppet::params::storeconfigs_dbserver,
-  $dbsocket         = $puppet::params::storeconfigs_dbsocket,
-  $dbport           = undef,
-  $package_provider = undef
-) {
+class puppet::storeconfigs(
+    $dbserver,
+    $dbport,
+    $puppet_service,
+    $puppet_master_package,
+    $puppetdb_startup_timeout,
+    $puppet_confdir =  $::puppet::params::confdir,
+    $puppet_conf    =  $::puppet::params::puppet_conf
+)inherits puppet::params {
 
-  package { $puppet::params::activerecord_package:
-    ensure    => latest,
-    provider  => $package_provider,
-  }
-
-  case $dbadapter {
-    'sqlite3': {
-      include puppet::storeconfigs::sqlite
-    }
-    'mysql': {
-      class { "puppet::storeconfigs::mysql":
-        dbuser      => $dbuser,
-        dbpassword  => $dbpassword,
+if ! defined(Class['puppetdb::master::config']) {
+      class{ 'puppetdb::master::config':
+        puppetdb_server          => $dbserver,
+        puppetdb_port            => $dbport,
+        puppet_confdir           => $puppet_confdir,
+        puppet_conf              => $puppet_conf,
+        restart_puppet           => false,
+        notify                   => $puppet_service,
+        puppetdb_startup_timeout => $puppetdb_startup_timeout,
+        require                  => Class['puppetdb'],
       }
-    }
-    'puppetdb': {
-      class { 'puppet::storeconfigs::puppetdb':
-        dbserver          => $dbserver,
-        dbport            => $dbport,
-        package_provider  => $package_provider,
-      }
-    }
-    default: { err("target dbadapter $dbadapter not implemented") }
   }
-
-  concat::fragment { 'puppet.conf-master-storeconfig':
-    order   => '06',
-    target  => "/etc/puppet/puppet.conf",
-    content => template("puppet/puppet.conf-master-storeconfigs.erb");
-  }
-
 }
-
