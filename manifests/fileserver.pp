@@ -1,7 +1,5 @@
 class puppet::fileserver {
 
-  include ::concat::setup
-
   ::concat { '/etc/puppet/fileserver.conf':
     owner  => 'root',
     group  => 'root',
