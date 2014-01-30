@@ -111,10 +111,10 @@ class puppet::master (
 
     Concat::Fragment['puppet.conf-master'] -> Service['httpd']
 
-    exec { "Certificate_Check":
-      command   => "puppet cert --generate ${certname} --trace",
-      unless    => "/bin/ls ${puppet_ssldir}/certs/${certname}.pem",
-      path      => "/usr/bin:/usr/local/bin",
+    exec { 'Certificate_Check':
+      command   => "puppet cert --generate ${::certname} --trace",
+      unless    => "/bin/ls ${puppet_ssldir}/certs/${::certname}.pem",
+      path      => '/usr/bin:/usr/local/bin',
       before    => Class['::passenger'],
       require   => Package[$puppet_master_package],
       logoutput => on_failure,
@@ -124,13 +124,33 @@ class puppet::master (
       class { '::passenger': }
     }
 
-    apache::vhost { "puppet-$puppet_site":
-      port     => $puppet_passenger_port,
-      priority => '40',
-      docroot  => $puppet_docroot,
-      template => 'puppet/apache2.conf.erb',
-      require  => [ File['/etc/puppet/rack/config.ru'], File['/etc/puppet/puppet.conf'] ],
-      ssl      => true,
+    apache::mod { 'ssl': }
+
+    apache::vhost { "puppet-${puppet_site}":
+      port              => $puppet_passenger_port,
+      servername        => $puppet_site,
+      priority          => '40',
+      docroot           => $puppet_docroot,
+      rack_base_uris    => ['/'],
+      directories => [
+        path          => '/etc/puppet/rack/',
+        Options       => None,
+        AllowOverride => None,
+        Order         => ['allow','deny'],
+        allow         => 'from all',
+      ]
+      ssl               => true,
+      ssl_cert          => "${puppet_ssldir}/certs/${certname}.pem",
+      ssl_key           => "${puppet_ssldir}/private_keys/${certname}.pem",
+      ssl_chain         => "${puppet_ssldir}/ca/ca_crt.pem",
+      ssl_ca            => "${puppet_ssldir}/ca/ca_crt.pem",
+      ssl_crl           => "${puppet_ssldir}/ca/ca_crl.pem",
+      ssl_verify_client => 'optional',
+      ssl_verify_depth  => 1,
+      ssl_options       => ['+StdEnvVars'],
+      ssl_protocol      => '-ALL +SSLv3 +TLSv1',
+      ssl_cipher        => 'ALL:!ADH:RC4+RSA:+HIGH:+MEDIUM:-LOW:-SSLv2:-EXP',
+      require           => [ File['/etc/puppet/rack/config.ru'], File['/etc/puppet/puppet.conf'] ],       
     }
 
     file { ["/etc/puppet/rack", "/etc/puppet/rack/public"]:
