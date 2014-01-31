@@ -123,6 +123,10 @@ class puppet (
 
 ) inherits puppet::params {
 
+  class {'puppet::common':
+    puppet_server => $puppet_server,
+  }
+
   if $dashboard {
     class {'dashboard':
       dashboard_ensure       => $dashboard_ensure,
@@ -171,7 +175,6 @@ class puppet (
       version                   => $version,
       puppet_defaults           => $puppet_defaults,
       puppet_agent_service      => $puppet_agent_service,
-      puppet_server             => $puppet_server,
       puppet_conf               => $puppet_conf,
       puppet_agent_name         => $puppet_agent_name,
       package_provider          => $package_provider,

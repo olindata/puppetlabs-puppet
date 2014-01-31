@@ -79,11 +79,11 @@ class puppet::agent(
     }
   }
 
-  if ! defined(Concat::Fragment['puppet.conf-common']) {
-    concat::fragment { 'puppet.conf-common':
-      order   => '00',
-      target  => $puppet_conf,
-      content => template("puppet/puppet.conf-common.erb"),
-    }
+  concat::fragment { 'puppet.conf-agent':
+    order   => '01',
+    target  => $puppet_conf,
+    content => template("puppet/puppet.conf-agent.erb"),
   }
+
+
 }
