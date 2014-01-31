@@ -107,22 +107,9 @@ class puppet::master (
 
   if $puppet_passenger {
     $service_notify  = Service['httpd']
-    $service_require = [Package[$puppet_master_package], Class['passenger']]
+    $service_require = Package[$puppet_master_package]
 
     Concat::Fragment['puppet.conf-master'] -> Service['httpd']
-
-    exec { 'Certificate_Check':
-      command   => "puppet cert --generate ${::certname} --trace",
-      unless    => "/bin/ls ${puppet_ssldir}/certs/${::certname}.pem",
-      path      => '/usr/bin:/usr/local/bin',
-      before    => Class['::passenger'],
-      require   => Package[$puppet_master_package],
-      logoutput => on_failure,
-    }
-
-    if ! defined(Class['passenger']) {
-      class { '::passenger': }
-    }
 
     apache::mod { 'ssl': }
 
@@ -138,7 +125,7 @@ class puppet::master (
         AllowOverride => None,
         Order         => ['allow','deny'],
         allow         => 'from all',
-      ]
+      ],
       ssl               => true,
       ssl_cert          => "${puppet_ssldir}/certs/${certname}.pem",
       ssl_key           => "${puppet_ssldir}/private_keys/${certname}.pem",
