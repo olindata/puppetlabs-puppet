@@ -111,21 +111,19 @@ class puppet::master (
 
     Concat::Fragment['puppet.conf-master'] -> Service['httpd']
 
-    apache::mod { 'ssl': }
-
     apache::vhost { "puppet-${puppet_site}":
       port              => $puppet_passenger_port,
       servername        => $puppet_site,
       priority          => '40',
       docroot           => $puppet_docroot,
       rack_base_uris    => ['/'],
-      directories => [
+      directories       => {
         path          => '/etc/puppet/rack/',
-        Options       => None,
-        AllowOverride => None,
-        Order         => ['allow','deny'],
+        options       => None,
+        allowoverride => None,
+        order         => ['allow','deny'],
         allow         => 'from all',
-      ],
+      },
       ssl               => true,
       ssl_cert          => "${puppet_ssldir}/certs/${certname}.pem",
       ssl_key           => "${puppet_ssldir}/private_keys/${certname}.pem",
