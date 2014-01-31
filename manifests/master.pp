@@ -82,12 +82,6 @@ class puppet::master (
 
 ) inherits puppet::params {
 
-  File {
-    require => Package[$puppet_master_package],
-    owner   => 'puppet',
-    group   => 'puppet',
-  }
-
   if $storeconfigs {
     class { 'puppet::storeconfigs':
       dbadapter  => $storeconfigs_dbadapter,
@@ -126,6 +120,7 @@ class puppet::master (
       },
       ssl               => true,
       ssl_cert          => "${puppet_ssldir}/certs/${certname}.pem",
+      ssl_certs_dir     => "${puppet_ssldir}/certs",
       ssl_key           => "${puppet_ssldir}/private_keys/${certname}.pem",
       ssl_chain         => "${puppet_ssldir}/ca/ca_crt.pem",
       ssl_ca            => "${puppet_ssldir}/ca/ca_crt.pem",
@@ -140,6 +135,9 @@ class puppet::master (
 
     file { ["/etc/puppet/rack", "/etc/puppet/rack/public"]:
       ensure => directory,
+      require => Package[$puppet_master_package],
+      owner   => 'puppet',
+      group   => 'puppet',
       mode   => '0755',
     }
 
@@ -147,6 +145,9 @@ class puppet::master (
       ensure => present,
       source => "puppet:///modules/puppet/config.ru",
       mode   => '0644',
+      require => Package[$puppet_master_package],
+      owner   => 'puppet',
+      group   => 'puppet',
     }
 
     concat::fragment { 'puppet.conf-master':
@@ -192,6 +193,9 @@ class puppet::master (
   file { $puppet_vardir:
     ensure       => directory,
     recurse      => true,
+    require => Package[$puppet_master_package],
+    owner   => 'puppet',
+    group   => 'puppet',
     recurselimit => '1',
     notify       => $service_notify,
   }
