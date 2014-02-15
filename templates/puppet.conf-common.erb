@@ -1,9 +1,13 @@
 [main]
+server                    = <%= puppet_server %>
 logdir                    = <%= puppet_logdir %>
 vardir                    = <%= puppet_vardir %>
 ssldir                    = <%= puppet_ssldir %>
 rundir                    = /var/run/puppet
 factpath                  = $vardir/lib/facter
 pluginsync                = true
-certname                  = <%= certname %>
-
+templatedir               = $confdir/templates
+<% if operatingsystem == "Ubuntu" %>
+prerun_command            = /etc/puppet/etckeeper-commit-pre
+postrun_command           = /etc/puppet/etckeeper-commit-post
+<% end %>

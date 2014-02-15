@@ -31,7 +31,7 @@ class puppet::params {
   $puppet_passenger_port            = '8140'
 
   case $::operatingsystem {
-    'centos', 'redhat', 'fedora': {
+    'centos', 'redhat', 'fedora', 'scientific': {
       $puppet_master_package        = 'puppet'
       $puppet_master_service        = 'puppetmaster'
       $puppet_agent_service         = 'puppet'
