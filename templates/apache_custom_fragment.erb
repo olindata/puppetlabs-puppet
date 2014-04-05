@@ -1,0 +1,17 @@
+  #Custom puppet passenger settings
+  SSLProtocol -ALL +SSLv3 +TLSv1
+  SSLCipherSuite ALL:!ADH:RC4+RSA:+HIGH:+MEDIUM:-LOW:-SSLv2:-EXP
+  SSLVerifyClient optional
+  SSLVerifyDepth 1
+  SSLOptions +StdEnvVars +ExportCertData
+
+  <Directory /etc/puppet/rack/>
+	Options None
+	AllowOverride None
+    <%- if scope.lookupvar('apache::apache_version') == '2.4' -%>
+    Require all granted
+    <%- else -%>
+	Order allow,deny
+    allow from all
+    <%- end -%>
+  </Directory>
