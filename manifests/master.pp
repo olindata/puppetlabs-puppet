@@ -113,7 +113,7 @@ class puppet::master (
     puppet_docroot         => $puppet_docroot,
     apache_serveradmin     => $apache_serveradmin,
     puppet_conf            => $::puppet::params::puppet_conf,
-    puppet_ssldir          => $::puppet::params::puppet_ssldir,
+    puppet_ssldir          => $puppet_ssldir,
     certname               => $certname,
     conf_dir               => $::puppet::params::confdir,
   } ->
