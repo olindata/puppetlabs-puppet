@@ -1,5 +1,5 @@
 2012-08-28 - Stephen Johnson <stephen@pupppetlabs.com> - 0.0.2
- * Revert inifile updating sheel scripts as it adds spaces 
+ * Revert inifile updating sheel scripts as it adds spaces
 2012-08-31 - Stephen Johnson <stephen@puppetlabs.com> - 0.0.3
  * Fix reporting and add more spec tests
 2012-09-05 - Stephen Johnson <stephen@puppetlabs.com> - 0.0.4
@@ -7,13 +7,31 @@
  * Fix issue with inherited file permissions
  * Cleanup code to use resource defaults
  2013-03-22 Stephen Johnson <stephen@puppetlabs.com> - 0.0.5
- * Updated dependencies 
+ * Updated dependencies
 2013-03-29 Stephen Johnson <stephen@puppetlabs.com> - 0.0.7
   * Added redhat support
 2013-05-01 Stephen Johnson <stephen@puppetlabs.com> - 0.0.8
-  * Fix puppet site references 
+  * Fix puppet site references
 2013-05-12 Stephen Johnson <stephen@puppetlabs.com> - 0.0.9
-  * Add srv record support to client 
-
-
-
+  * Add srv record support to client
+2013-07-22 Stephen Johnson <steve@thatbytes.co.uk> - 0.0.14
+  * Added support of version 0.8.0 of Apache module
+2013-07-22 Stephen Johnson <steve@thatbytes.co.uk> - 0.0.15
+  * Use puppetlabs inifile
+2013-10-04 Stephen Johnson <steve@thatbytes.co.uk> - 0.0.16
+  * Identation fixes
+  * Also add puppetmaster-common to get round version issue
+  * Add spec tests for puppetmaster-common
+2013-10-04 Stephen Johnson <steve@thatbytes.co.uk> - 0.0.17
+  * Fix for puppetmaster-common not being in redhat repo
+2013-10-27 Stephen Johnson <steve@thatbytes.co.uk> - 0.0.18
+  * Add RedHat spec tests <Pall Valmundsson>
+  * Add ServerSpec test <Pall Valmundsson>
+  * Fix issues with external run type for agent
+  * Remove dependencies on MIT Gpg Server
+2013-11-10 Stephen Johnson <steve@thatbytes.co.uk> - 0.0.19
+  * Support configuring storeconfigs on an external puppetdb server <Pall Valmundsson>
+2014-02-28 Stephen Johnson <steve@thatbytes.co.uk> - 0.0.20
+  * fix directory and file permissions <saz>
+  * add parameter for changing hiera_config value <saz>
+  * fix apache_custom_fragment template for apache2.4 <saz>

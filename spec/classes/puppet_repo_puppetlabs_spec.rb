@@ -6,21 +6,20 @@ describe 'puppet::repo::puppetlabs', :type => :class do
     let :facts do
       {
         :osfamily        => 'Debian',
-        :lsbdistcodename => 'Precise'
+        :lsbdistcodename => 'Precise',
+        :lsbdistid       => 'Ubuntu'
       }
     end
     it 'should contain puppetlabs apt repos' do
       should contain_apt__source('puppetlabs').with(
         :repos      => 'main',
         :location   => 'http://apt.puppetlabs.com',
-        :key        => '4BD6EC30',
-        :key_server => 'pgp.mit.edu'
+        :key        => '4BD6EC30'
       )
       should contain_apt__source('puppetlabs-deps').with(
         :repos      => 'dependencies',
         :location   => 'http://apt.puppetlabs.com',
-        :key        => '4BD6EC30',
-        :key_server => 'pgp.mit.edu'
+        :key        => '4BD6EC30'
       )
     end
   end
@@ -59,7 +58,7 @@ describe 'puppet::repo::puppetlabs', :type => :class do
     end
   end
 
-  context 'on redhat systems' do
+  context 'on freebsd systems' do
     let :facts do
       { :osfamily        => 'FreeBSD' }
     end

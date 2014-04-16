@@ -3,43 +3,36 @@
 # This class installs and configures a Puppet master
 #
 # Parameters:
-#   [*modulepath*]            - The modulepath configuration value used in
-#                               puppet.conf
-#   [*confdir*]               - The confdir configuration value in puppet.conf
-#   [*manifest*]              - The manifest configuration value in puppet.conf
-#   [*storeconfigs*]          - Boolean determining whether storeconfigs is
-#                               to be enabled.
-#   [*storeconfigs_dbadapter*] - The database adapter to use with storeconfigs
-#   [*storeconfigs_dbuser*]   - The database username used with storeconfigs
-#   [*storeconfigs_dbpassword*] - The database password used with storeconfigs
-#   [*storeconfigs_dbserver*]   - Fqdn of the storeconfigs database server
-#   [*storeconfigs_dbsocket*]   - The path to the mysql socket file
-#   [*install_mysql_pkgs*]      - Boolean determining whether mysql and related
-#                                 devel packages should be installed.
-#   [*certname*]              - The certname configuration value in puppet.conf
-#   [*autosign*]              - The autosign configuration value in puppet.conf
-#   [*dashboard_port*]          - The port on which puppet-dashboard should run
-#   [*puppet_passenger*]      - Boolean value to determine whether puppet is
-#                               to be run with Passenger
-#   [*puppet_site*]           - The VirtualHost value used in the apache vhost
-#                               configuration file when Passenger is enabled
-#   [*puppet_docroot*]        - The DocumentRoot value used in the apache vhost
-#                               configuration file when Passenger is enabled
-#   [*puppet_vardir*]         - The path to the puppet vardir
-#   [*puppet_passenger_port*] - The port on which puppet is listening when
-#                               Passenger is enabled
-#   [*puppet_master_package*]   - The name of the puppet master package
-#   [*package_provider*]        - The provider used for package installation
-#   [*version*]               - The value of the ensure parameter for the
-#                               puppet master and agent packages
-#
-# Actions:
+#  ['user_id']                  - The userid of the puppet user
+#  ['group_id']                 - The groupid of the puppet group
+#  ['modulepath']               - Module path to be served by the puppet master
+#  ['manifest']                 - Manifest path
+#  ['hiera_config']             - Hiera config file path
+#  ['reports']                  - Turn on puppet reports
+#  ['storeconfigs']             - Use storedcofnigs
+#  ['storeconfigs_dbserver']    - Puppetdb server
+#  ['storeconfigs_dbport']      - Puppetdb port
+#  ['certname']                 - The certname the puppet master should use
+#  ['autosign']                 - Auto sign agent certificates default false
+#  ['reporturl']                - Url to send reports to, if reporting enabled
+#  ['puppet_ssldir']            - Puppet sll directory
+#  ['puppet_docroot']           - Doc root to be configured in apache vhost
+#  ['puppet_vardir']            - Vardir used by puppet
+#  ['puppet_passenger_port']    - Port to conifgure passenger on default 8140
+#  ['puppet_master_package']    - Puppet master package
+#  ['puppet_master_service']    - Puppet master service
+#  ['version']                  - Version of the puppet master package to install
+#  ['apache_serveradmin']       - Apache server admin
+#  ['pluginsync']               - Enable plugin sync
+#  ['parser']                   - Which parser to use
+#  ['puppetdb_startup_timeout'] - The timeout for puppetdb
 #
 # Requires:
 #
-#  Class['concat']
-#  Class['stdlib']
-#  Class['mysql'] (conditionally)
+#  - inifile
+#  - Class['puppet::params']
+#  - Class[puppet::passenger]
+#  - Class['puppet::storeconfigs']
 #
 # Sample Usage:
 #
@@ -49,163 +42,207 @@
 #  ]
 #
 #  class { "puppet::master":
-#    modulepath => inline_template("<%= modulepath.join(':') %>"),
-#    dbadapter  => "mysql",
-#    dbuser     => "puppet",
-#    dbpassword => "password"
-#    dbsocket   => "/var/run/mysqld/mysqld.sock",
+#    modulepath             => inline_template("<%= modulepath.join(':') %>"),
+#    storeconfigs          => 'true',
 #  }
 #
 class puppet::master (
-  $modulepath = $::puppet::params::modulepath,
-  $confdir = $::puppet::params::confdir,
-  $manifest = $::puppet::params::manifest,
-  $storeconfigs = false,
-  $storeconfigs_dbadapter = $::puppet::params::storeconfigs_dbadapter,
-  $storeconfigs_dbuser = $::puppet::params::storeconfigs_dbuser,
-  $storeconfigs_dbpassword = $::puppet::params::storeconfigs_dbpassword,
-  $storeconfigs_dbserver = $::puppet::params::storeconfigs_dbserver,
-  $storeconfigs_dbsocket = $::puppet::params::storeconfigs_dbsocket,
-  $install_mysql_pkgs = $::puppet::params::puppet_storeconfigs_packages,
-  $certname = $::fqdn,
-  $autosign = false,
-  $dashboard_port = 3000,
-  $puppet_passenger = false,
-  $puppet_site = $::puppet::params::puppet_site,
-  $puppet_docroot = $::puppet::params::puppet_docroot,
-  $puppet_vardir = $::puppet::params::puppet_vardir,
-  $puppet_passenger_port = false,
-  $puppet_master_package = $::puppet::params::puppet_master_package,
-  $package_provider = undef,
-  $puppet_master_service = $::puppet::params::puppet_master_service,
-  $version = 'present'
-
+  $user_id                    = undef,
+  $group_id                   = undef,
+  $modulepath                 = $::puppet::params::modulepath,
+  $manifest                   = $::puppet::params::manifest,
+  $hiera_config               = $::puppet::params::hiera_config,
+  $reports                    = store,
+  $storeconfigs               = false,
+  $storeconfigs_dbserver      = $::puppet::params::storeconfigs_dbserver,
+  $storeconfigs_dbport        = $::puppet::params::storeconfigs_dbport,
+  $certname                   = $::fqdn,
+  $autosign                   = false,
+  $reporturl                  = 'UNSET',
+  $puppet_ssldir              = $::puppet::params::puppet_ssldir,
+  $puppet_docroot             = $::puppet::params::puppet_docroot,
+  $puppet_vardir              = $::puppet::params::puppet_vardir,
+  $puppet_passenger_port      = $::puppet::params::puppet_passenger_port,
+  $puppet_master_package      = $::puppet::params::puppet_master_package,
+  $puppet_master_service      = $::puppet::params::puppet_master_service,
+  $version                    = 'present',
+  $apache_serveradmin         = $::puppet::params::apache_serveradmin,
+  $pluginsync                 = true,
+  $parser                     = $::puppet::params::parser,
+  $puppetdb_startup_timeout   = '60',
+  $puppetdb_strict_validation = $::puppet::params::puppetdb_strict_validation
 ) inherits puppet::params {
 
-  if $storeconfigs {
-    class { 'puppet::storeconfigs':
-      dbadapter  => $storeconfigs_dbadapter,
-      dbuser     => $storeconfigs_dbuser,
-      dbpassword => $storeconfigs_dbpassword,
-      dbserver   => $storeconfigs_dbserver,
-      dbsocket   => $storeconfigs_dbsocket,
-    }
-  }
+  anchor { 'puppet::master::begin': }
 
-  if ! defined(Package[$puppet_master_package]) {
-    package { $puppet_master_package:
-      ensure   => $version,
-      provider => $package_provider,
-    }
-  }
-
-  if $puppet_passenger {
-    $service_notify  = Service['httpd']
-    $service_require = Package[$puppet_master_package]
-
-    Concat::Fragment['puppet.conf-master'] -> Service['httpd']
-
-    apache::vhost { "puppet-${puppet_site}":
-      port              => $puppet_passenger_port,
-      servername        => $puppet_site,
-      priority          => '40',
-      docroot           => $puppet_docroot,
-      rack_base_uris    => ['/'],
-      directories       => {
-        path          => '/etc/puppet/rack/',
-        options       => None,
-        allowoverride => None,
-        order         => ['allow','deny'],
-        allow         => 'from all',
-      },
-      ssl               => true,
-      ssl_cert          => "${puppet_ssldir}/certs/${certname}.pem",
-      ssl_certs_dir     => "${puppet_ssldir}/certs",
-      ssl_key           => "${puppet_ssldir}/private_keys/${certname}.pem",
-      ssl_chain         => "${puppet_ssldir}/ca/ca_crt.pem",
-      ssl_ca            => "${puppet_ssldir}/ca/ca_crt.pem",
-      ssl_crl           => "${puppet_ssldir}/ca/ca_crl.pem",
-      ssl_verify_client => 'optional',
-      ssl_verify_depth  => 1,
-      ssl_options       => ['+StdEnvVars'],
-      ssl_protocol      => '-ALL +SSLv3 +TLSv1',
-      ssl_cipher        => 'ALL:!ADH:RC4+RSA:+HIGH:+MEDIUM:-LOW:-SSLv2:-EXP',
-      require           => [ File['/etc/puppet/rack/config.ru'], File['/etc/puppet/puppet.conf'] ],       
-    }
-
-    file { ["/etc/puppet/rack", "/etc/puppet/rack/public"]:
-      ensure => directory,
-      require => Package[$puppet_master_package],
-      owner   => 'puppet',
-      group   => 'puppet',
-      mode   => '0755',
-    }
-
-    file { "/etc/puppet/rack/config.ru":
+  if ! defined(User[$::puppet::params::puppet_user]) {
+    user { $::puppet::params::puppet_user:
       ensure => present,
-      source => "puppet:///modules/puppet/config.ru",
-      mode   => '0644',
-      require => Package[$puppet_master_package],
-      owner   => 'puppet',
-      group   => 'puppet',
-    }
-
-    concat::fragment { 'puppet.conf-master':
-      order   => '05',
-      target  => "/etc/puppet/puppet.conf",
-      content => template("puppet/puppet.conf-master.erb"),
-    }
-  } else {
-
-    $service_require = Package[$puppet_master_package]
-    $service_notify = Exec['puppet_master_start']
-
-    Concat::Fragment['puppet.conf-master'] -> Exec['puppet_master_start']
-
-    concat::fragment { 'puppet.conf-master':
-      order   => '05',
-      target  => "/etc/puppet/puppet.conf",
-      content => template("puppet/puppet.conf-master.erb"),
-    }
-
-    exec { 'puppet_master_start':
-      command   => '/usr/bin/nohup puppet master &',
-      refresh   => '/usr/bin/pkill puppet && /usr/bin/nohup puppet master &',
-      unless    => "/bin/ps -ef | grep -v grep | /bin/grep 'puppet master'",
-      require   => File['/etc/puppet/puppet.conf'],
-      subscribe => Package[$puppet_master_package],
+      uid    => $user_id,
+      gid    => $::puppet::params::puppet_group,
     }
   }
 
-  if ! defined(Concat[$puppet_conf]) {
-    concat { $puppet_conf:
-      mode    => '0644',
-      require => $service_require,
-      notify  => $service_notify,
+  if ! defined(Group[$::puppet::params::puppet_group]) {
+    group { $::puppet::params::puppet_group:
+      ensure => present,
+      gid    => $group_id,
     }
-  } else {
-    Concat<| title == $puppet_conf |> {
-      require => $service_require,
-      notify  +> $service_notify,
+  }
+
+  if $::osfamily == 'Debian'
+  {
+    package { 'puppetmaster-common':
+      ensure   => $version,
+    }
+    package { $puppet_master_package:
+      ensure  => $version,
+      require => Package[puppetmaster-common],
+    }
+  }
+  else
+  {
+    package { $puppet_master_package:
+      ensure         => $version,
+    }
+  }
+
+  Anchor['puppet::master::begin'] ->
+  class {'puppet::passenger':
+    puppet_passenger_port  => $puppet_passenger_port,
+    puppet_docroot         => $puppet_docroot,
+    apache_serveradmin     => $apache_serveradmin,
+    puppet_conf            => $::puppet::params::puppet_conf,
+    puppet_ssldir          => $puppet_ssldir,
+    certname               => $certname,
+    conf_dir               => $::puppet::params::confdir,
+  } ->
+  Anchor['puppet::master::end']
+
+  service { $puppet_master_service:
+    ensure    => stopped,
+    enable    => false,
+    require   => File[$::puppet::params::puppet_conf],
+  }
+
+  if ! defined(File[$::puppet::params::puppet_conf]){
+    file { $::puppet::params::puppet_conf:
+      ensure  => 'file',
+      mode    => '0644',
+      require => File[$::puppet::params::confdir],
+      owner   => $::puppet::params::puppet_user,
+      group   => $::puppet::params::puppet_group,
+      notify  => Service['httpd'],
+    }
+  }
+  else {
+    File<| title == $::puppet::params::puppet_conf |> {
+      notify  => Service['httpd'],
+    }
+  }
+
+  if ! defined(File[$::puppet::params::confdir]) {
+    file { $::puppet::params::confdir:
+      ensure  => directory,
+      mode    => '0755',
+      require => Package[$puppet_master_package],
+      owner   => $::puppet::params::puppet_user,
+      group   => $::puppet::params::puppet_group,
+      notify  => Service['httpd'],
+    }
+  }
+  else {
+    File<| title == $::puppet::params::confdir |> {
+      notify  +> Service['httpd'],
+      require +> Package[$puppet_master_package],
     }
   }
 
   file { $puppet_vardir:
     ensure       => directory,
-    recurse      => true,
-    require => Package[$puppet_master_package],
-    owner   => 'puppet',
-    group   => 'puppet',
-    recurselimit => '1',
-    notify       => $service_notify,
+    owner        => $::puppet::params::puppet_user,
+    group        => $::puppet::params::puppet_group,
+    notify       => Service['httpd'],
+    require      => Package[$puppet_master_package]
   }
 
-  if defined(File['/etc/puppet']) {
-    File ['/etc/puppet'] {
-      require +> Package[$puppet_master_package],
-      notify  +> $service_notify
+  if $storeconfigs {
+    Anchor['puppet::master::begin'] ->
+    class { 'puppet::storeconfigs':
+      dbserver                   => $storeconfigs_dbserver,
+      dbport                     => $storeconfigs_dbport,
+      puppet_service             => Service['httpd'],
+      puppet_confdir             => $::puppet::params::puppet_confdir,
+      puppet_conf                => $::puppet::params::puppet_conf,
+      puppet_master_package      => $puppet_master_package,
+      puppetdb_startup_timeout   => $puppetdb_startup_timeout,
+      puppetdb_strict_validation => $puppetdb_strict_validation,
+    } ->
+    Anchor['puppet::master::end']
+  }
+
+  Ini_setting {
+      path    => $::puppet::params::puppet_conf,
+      require => File[$::puppet::params::puppet_conf],
+      notify  => Service['httpd'],
+      section => 'master',
+  }
+
+  ini_setting {'puppetmastermodulepath':
+    ensure  => present,
+    setting => 'modulepath',
+    value   => $modulepath,
+  }
+
+  ini_setting {'puppetmastermanifest':
+    ensure  => present,
+    setting => 'manifest',
+    value   => $manifest,
+  }
+
+  ini_setting {'puppetmasterhieraconfig':
+    ensure  => present,
+    setting => 'hiera_config',
+    value   => $hiera_config,
+  }
+
+  ini_setting {'puppetmasterautosign':
+    ensure  => present,
+    setting => 'autosign',
+    value   => $autosign,
+  }
+
+  ini_setting {'puppetmastercertname':
+    ensure  => present,
+    setting => 'certname',
+    value   => $certname,
+  }
+
+  ini_setting {'puppetmasterreports':
+    ensure  => present,
+    setting => 'reports',
+    value   => $reports,
+  }
+
+  ini_setting {'puppetmasterpluginsync':
+    ensure  => present,
+    setting => 'pluginsync',
+    value   => $pluginsync,
+  }
+
+  ini_setting {'puppetmasterparser':
+    ensure  => present,
+    setting => 'parser',
+    value   => $parser,
+  }
+
+  if $reporturl != 'UNSET'{
+    ini_setting {'puppetmasterreport':
+      ensure  => present,
+      setting => 'reporturl',
+      value   => $reporturl,
     }
   }
 
+  anchor { 'puppet::master::end': }
 }
-

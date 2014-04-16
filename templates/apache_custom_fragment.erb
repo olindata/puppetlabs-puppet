@@ -8,6 +8,10 @@
   <Directory /etc/puppet/rack/>
 	Options None
 	AllowOverride None
+    <%- if scope.lookupvar('apache::apache_version') == '2.4' -%>
+    Require all granted
+    <%- else -%>
 	Order allow,deny
-	allow from all
+    allow from all
+    <%- end -%>
   </Directory>
