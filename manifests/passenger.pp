@@ -38,7 +38,7 @@ class puppet::passenger(
   $puppet_ssldir,
   $certname,
   $conf_dir,
-  $passenger_version = $::puppet::params::passengerversion,
+  $dns_alt_names
 ){
   include apache
   include puppet::params
@@ -75,7 +75,7 @@ class puppet::passenger(
   $crt_clean_cmd  = "puppet cert clean ${certname}"
   # I would have preferred to use puppet cert generate, but it does not
   # return the corret exit code on some versions of puppet
-  $crt_gen_cmd   = "puppet certificate --ca-location=local --dns_alt_names=puppet generate ${certname}"
+  $crt_gen_cmd   = "puppet certificate --ca-location=local --dns_alt_names=$dns_alt_names generate ${certname}"
   # I am using the sign command here b/c AFAICT, the sign command for certificate
   # does not work
   $crt_sign_cmd  = "puppet cert sign --allow-dns-alt-names ${certname}"
@@ -99,37 +99,41 @@ class puppet::passenger(
   }
 
   apache::vhost { "puppet-${certname}":
-    port               => $puppet_passenger_port,
-    priority           => '40',
-    docroot            => $puppet_docroot,
-    serveradmin        => $apache_serveradmin,
-    servername         => $certname,
-    ssl                => true,
-    ssl_cert           => "${puppet_ssldir}/certs/${certname}.pem",
-    ssl_key            => "${puppet_ssldir}/private_keys/${certname}.pem",
-    ssl_chain          => "${puppet_ssldir}/ca/ca_crt.pem",
-    ssl_ca             => "${puppet_ssldir}/ca/ca_crt.pem",
-    ssl_crl            => "${puppet_ssldir}/ca/ca_crl.pem",
-    rack_base_uris     => '/',
-    custom_fragment    => template('puppet/apache_custom_fragment.erb'),
-    require            => [ File['/etc/puppet/rack/config.ru'], File[$puppet_conf] ],
+    port              => $puppet_passenger_port,
+    priority          => '40',
+    docroot           => $puppet_docroot,
+    serveradmin       => $apache_serveradmin,
+    servername        => $certname,
+    ssl               => true,
+    ssl_cert          => "${puppet_ssldir}/certs/${certname}.pem",
+    ssl_key           => "${puppet_ssldir}/private_keys/${certname}.pem",
+    ssl_chain         => "${puppet_ssldir}/ca/ca_crt.pem",
+    ssl_ca            => "${puppet_ssldir}/ca/ca_crt.pem",
+    ssl_crl           => "${puppet_ssldir}/ca/ca_crl.pem",
+    ssl_protocol      => 'ALL -SSLv2 -SSLv3',
+    ssl_cipher        => 'ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!3DES:!MD5:!PSK',
+    ssl_honorcipherorder => 'On',
+    ssl_verify_client => 'optional',
+    ssl_verify_depth  => '1',
+    ssl_options       => ['+StdEnvVars', '+ExportCertData'],
+    rack_base_uris    => '/',
+    directories       => [
+      {
+        path => $puppet_docroot,
+      },
+      {
+        path    => '/etc/puppet/rack',
+        options => 'None',
+      },
+    ],
+    require         => [ File['/etc/puppet/rack/config.ru'], File[$puppet_conf] ],
   }
 
   #Hack to add extra passenger configurations for puppetmaster
-  case $passenger_version {
-    3, 4: {
-      $template = "puppet/puppet_passenger${passenger_version}.conf.erb"    
-    }
-    default: { 
-      fail("this version of passenger is not supported")
-    }
-  }
-  
-  
   file { 'puppet_passenger.conf':
     ensure  => file,
     path    => "${apache::mod_dir}/puppet_passenger.conf",
-    content => template($template),
+    content => template('puppet/puppet_passenger.conf.erb'),
     notify  => Service['httpd'],
   }
 

@@ -21,7 +21,8 @@ describe 'puppet::master', :type => :class do
                 :autosign               => 'true',
                 :certname               => 'test.example.com',
                 :storeconfigs           => 'true',
-                :storeconfigs_dbserver  => 'test.example.com'
+                :storeconfigs_dbserver  => 'test.example.com',
+                :dns_alt_names          => ['puppet']
 
             }
         end
@@ -73,6 +74,10 @@ describe 'puppet::master', :type => :class do
             should contain_class('puppet::passenger').with(
               :before => 'Anchor[puppet::master::end]'
             )
+            should contain_ini_setting('puppetmasterenvironmentpath').with(
+                :ensure  => 'absent',
+                :setting => 'environmentpath'
+            )
             should contain_ini_setting('puppetmastermodulepath').with(
                 :ensure  => 'present',
                 :section => 'master',
@@ -128,6 +133,13 @@ describe 'puppet::master', :type => :class do
                 :path    => '/etc/puppet/puppet.conf',
                 :value   => 'true'
             )
+            should contain_ini_setting('puppetmasterdnsaltnames').with(
+                :ensure  => 'present',
+                :section => 'master',
+                :setting => 'dns_alt_names',
+                :path    => '/etc/puppet/puppet.conf',
+                :value   => params[:dns_alt_names].join(',')
+            )
             should contain_anchor('puppet::master::begin').with_before(
               ['Class[Puppet::Passenger]', 'Class[Puppet::Storeconfigs]']
             )
@@ -154,7 +166,8 @@ describe 'puppet::master', :type => :class do
                 :autosign               => 'true',
                 :certname               => 'test.example.com',
                 :storeconfigs           => 'true',
-                :storeconfigs_dbserver  => 'test.example.com'
+                :storeconfigs_dbserver  => 'test.example.com',
+                :dns_alt_names          => ['puppet']
 
             }
         end
@@ -205,6 +218,9 @@ describe 'puppet::master', :type => :class do
             should contain_class('puppet::passenger').with(
               :before => 'Anchor[puppet::master::end]'
             )
+            should contain_ini_setting('puppetmasterenvironmentpath').with(
+                :ensure  => 'absent'
+            )
             should contain_ini_setting('puppetmastermodulepath').with(
                 :ensure  => 'present',
                 :section => 'master',
@@ -260,10 +276,83 @@ describe 'puppet::master', :type => :class do
                 :path    => '/etc/puppet/puppet.conf',
                 :value   => 'true'
             )
+            should contain_ini_setting('puppetmasterdnsaltnames').with(
+                :ensure  => 'present',
+                :section => 'master',
+                :setting => 'dns_alt_names',
+                :path    => '/etc/puppet/puppet.conf',
+                :value   => params[:dns_alt_names].join(',')
+            )
             should contain_anchor('puppet::master::begin').with_before(
               ['Class[Puppet::Passenger]', 'Class[Puppet::Storeconfigs]']
             )
             should contain_anchor('puppet::master::end')
         }
     end
+    context 'When environment handling is set to directory' do
+        let(:facts) do
+            {
+                :osfamily        => 'RedHat',
+                :operatingsystem => 'RedHat',
+                :operatingsystemrelease => '6',
+                :concat_basedir => '/nde',
+            }
+        end
+        let (:params) do {
+            :environments => 'directory'
+        }
+        end
+
+        it {
+            should contain_ini_setting('puppetmasterenvironmentpath').with(
+                :ensure  => 'present',
+                :section => 'master',
+                :setting => 'environmentpath',
+                :path    => '/etc/puppet/puppet.conf',
+                :value   => '/etc/puppet/environments'
+            )
+            should contain_ini_setting('puppetmastermodulepath').with(
+                :ensure  => 'absent',
+                :setting => 'modulepath'
+            )
+            should contain_ini_setting('puppetmastermanifest').with(
+                :ensure  => 'absent',
+                :setting => 'manifest'
+            )
+        }
+    end
+    context 'When environment handling is set to directory with specified environmentpath' do
+        let(:facts) do
+            {
+                :osfamily        => 'RedHat',
+                :operatingsystem => 'RedHat',
+                :operatingsystemrelease => '6',
+                :concat_basedir => '/nde',
+            }
+        end
+        let (:params) do {
+            :environments => 'directory',
+            :environmentpath => '/etc/puppetlabs/puppet/environments',
+        }
+        end
+
+        it {
+            should contain_ini_setting('puppetmasterenvironmentpath').with(
+                :ensure  => 'present',
+                :section => 'master',
+                :setting => 'environmentpath',
+                :path    => '/etc/puppet/puppet.conf',
+                :value   => '/etc/puppetlabs/puppet/environments'
+            )
+            should contain_ini_setting('puppetmastermodulepath').with(
+                :ensure  => 'absent',
+                :setting => 'modulepath'
+            )
+            should contain_ini_setting('puppetmastermanifest').with(
+                :ensure  => 'absent',
+                :setting => 'manifest'
+            )
+        }
+    end
+        
 end

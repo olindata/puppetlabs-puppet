@@ -68,7 +68,27 @@ describe 'agent tests:' do
             # by the agent module.
             it { should have_entry "* * * * \/usr\/bin\/puppet agent --no-daemonize --onetime --logdest syslog > \/dev\/null 2>&1" }
         end
+    end
 
+    context 'agent run style manual' do
+        it 'should work with no errors' do
+            pp = <<-EOS
+                class { 'puppet::agent':
+                    puppet_run_style => 'manual',
+                }
+            EOS
+
+            # Run it twice and test for idempotency
+            puppet_apply(pp) do |r|
+                r.exit_code.should_not == 1
+                r.refresh
+                r.exit_code.should be_zero
+            end
+        end
+
+        describe package('puppet') do
+            it { should be_installed }
+        end
     end
 
     context 'agent with external scheduler' do

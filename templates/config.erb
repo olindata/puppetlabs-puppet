@@ -1,6 +1,16 @@
 # a config.ru, for use with every rack-compatible webserver.
 # SSL needs to be handled outside this, though.
 
+# Ruby 1.9 cares about encoding, and apache starts up as US-ASCII in most
+# cases.  If you have a manifest that is UTF-8, then puppet won't be able to
+# handle it.  To work around that, we change the default encoding.  See
+# https://tickets.puppetlabs.com/browse/PUP-1386 and
+# https://github.com/puppetlabs/puppet/pull/1666 for more details.
+if RUBY_VERSION >= "1.9"
+  Encoding.default_external = Encoding::UTF_8
+  Encoding.default_internal = Encoding::UTF_8
+end
+
 # if puppet is not in your RUBYLIB:
 # $LOAD_PATH.unshift('/opt/puppet/lib')
 

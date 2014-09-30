@@ -8,6 +8,8 @@
 #  ['modulepath']               - Module path to be served by the puppet master
 #  ['manifest']                 - Manifest path
 #  ['hiera_config']             - Hiera config file path
+#  ['environments']             - Which environment method (directory or config)
+#  ['environmentpath']          - Puppet environment base path (use with environments directory)
 #  ['reports']                  - Turn on puppet reports
 #  ['storeconfigs']             - Use storedcofnigs
 #  ['storeconfigs_dbserver']    - Puppetdb server
@@ -26,6 +28,8 @@
 #  ['pluginsync']               - Enable plugin sync
 #  ['parser']                   - Which parser to use
 #  ['puppetdb_startup_timeout'] - The timeout for puppetdb
+#  ['dns_alt_names']            - Comma separated list of alternative DNS names
+#  ['digest_algorithm']         - The algorithm to use for file digests.
 #
 # Requires:
 #
@@ -52,6 +56,8 @@ class puppet::master (
   $modulepath                 = $::puppet::params::modulepath,
   $manifest                   = $::puppet::params::manifest,
   $hiera_config               = $::puppet::params::hiera_config,
+  $environmentpath            = $::puppet::params::environmentpath,
+  $environments               = $::puppet::params::environments,
   $reports                    = store,
   $storeconfigs               = false,
   $storeconfigs_dbserver      = $::puppet::params::storeconfigs_dbserver,
@@ -70,7 +76,9 @@ class puppet::master (
   $pluginsync                 = true,
   $parser                     = $::puppet::params::parser,
   $puppetdb_startup_timeout   = '60',
-  $puppetdb_strict_validation = $::puppet::params::puppetdb_strict_validation
+  $puppetdb_strict_validation = $::puppet::params::puppetdb_strict_validation,
+  $dns_alt_names              = ['puppet'],
+  $digest_algorithm           = $::puppet::params::digest_algorithm,
 ) inherits puppet::params {
 
   anchor { 'puppet::master::begin': }
@@ -116,6 +124,7 @@ class puppet::master (
     puppet_ssldir          => $puppet_ssldir,
     certname               => $certname,
     conf_dir               => $::puppet::params::confdir,
+    dns_alt_names          => join($dns_alt_names,','),
   } ->
   Anchor['puppet::master::end']
 
@@ -188,16 +197,32 @@ class puppet::master (
       section => 'master',
   }
 
+  case $environments {
+    'config': {
+      $setting_config='present'
+      $setting_directory='absent'
+    }
+    'directory': {
+      $setting_config='absent'
+      $setting_directory='present'
+    }
+    default: { fail("Unknown value for environments ${environments}") }
+  }
+
   ini_setting {'puppetmastermodulepath':
-    ensure  => present,
+    ensure  => $setting_config,
     setting => 'modulepath',
     value   => $modulepath,
   }
-
   ini_setting {'puppetmastermanifest':
-    ensure  => present,
+    ensure  => $setting_config,
     setting => 'manifest',
     value   => $manifest,
+  }
+  ini_setting {'puppetmasterenvironmentpath':
+    ensure  => $setting_directory,
+    setting => 'environmentpath',
+    value   => $environmentpath,
   }
 
   ini_setting {'puppetmasterhieraconfig':
@@ -242,6 +267,18 @@ class puppet::master (
       setting => 'reporturl',
       value   => $reporturl,
     }
+  }
+
+  ini_setting {'puppetmasterdnsaltnames':
+      ensure  => present,
+      setting => 'dns_alt_names',
+      value   => join($dns_alt_names, ','),
+  }
+
+  ini_setting {'puppetmasterdigestalgorithm':
+      ensure  => present,
+      setting => 'digest_algorithm',
+      value   => $digest_algorithm,
   }
 
   anchor { 'puppet::master::end': }

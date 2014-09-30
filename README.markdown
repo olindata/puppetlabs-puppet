@@ -27,15 +27,31 @@ running through webrick. In which case run a single puppet run using
         storeconfigs              => true,
     }
 
-### Master environments ###
+## Puppet Environments ##
+
+Puppet 3.5 introduced a new way of handling Puppet environments known as _Directory Environments_.  This is expected to become the default configuration as of Puppet 4.0, this module supports both methods.
+
+### Config Method (default) ###
+
+    class { 'puppet::master': }
+
     puppet::masterenv {'dev':
-        modulepath => '/etc/puppet/evn/dev/modules',
+        modulepath => '/etc/puppet/env/dev/modules',
         manifest   => '/etc/puppet/env/dev/site.pp',
     }
     puppet::masterenv {'production':
-        modulepath => '/etc/puppet/evn/production/modules',
+        modulepath => '/etc/puppet/env/production/modules',
         manifest   => '/etc/puppet/env/production/site.pp',
     }
+
+### Directory method using _environmentpath_ ###
+
+    class { 'puppet::master':
+      environments => 'directory',
+    }
+
+Optionally, an `environmentpath` parameter can be supplied to configure the base root of Puppet environments, this defaults to `$confdir/environments`
+
 
 ## Agent ##
     class { 'puppet::agent':

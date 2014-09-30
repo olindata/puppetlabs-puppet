@@ -18,23 +18,44 @@
 #       manifest               => 'dev'
 #   }
 #
-define  puppet::masterenv ($modulepath, $manifest, $puppet_conf = $::puppet::params::puppet_conf){
+define  puppet::masterenv (
+  $modulepath,
+  $manifest,
+  $puppet_conf = $::puppet::params::puppet_conf,
+  $environments = $::puppet::master::environments,
+  $environmentpath = $::puppet::master::environmentpath
+) {
+
+  case $environments {
+    'directory': {
+      $path = "${environmentpath}/${name}/environment.conf"
+      $section = ''
+      file { "${environmentpath}/${name}":
+        ensure => directory,
+      }
+    }
+    default: {
+      $path = $puppet_conf
+      $section = $name
+    }
+  }
+
   Ini_setting {
-      path    => $puppet_conf,
+      path    => $path,
+      section => $section,
       require => [File[$puppet_conf], Class['puppet::master']],
       notify  => Service['httpd'],
   }
 
-  ini_setting {"masterenvmodule${name}":
-    ensure  => present,
-    section => $name,
-    setting => 'modulepath',
-    value   => $modulepath,
-  }
-  ini_setting {"masterenvmanifest${name}":
-    ensure  => present,
-    section => $name,
-    setting => 'manifest',
-    value   => $manifest,
+  ini_setting {
+    "masterenvmodule${name}":
+      ensure  => present,
+      setting => 'modulepath',
+      value   => $modulepath;
+
+    "masterenvmanifest${name}":
+      ensure  => present,
+      setting => 'manifest',
+      value   => $manifest;
   }
 }

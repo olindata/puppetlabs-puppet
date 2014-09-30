@@ -35,3 +35,26 @@
   * fix directory and file permissions <saz>
   * add parameter for changing hiera_config value <saz>
   * fix apache_custom_fragment template for apache2.4 <saz>
+2014-04-29 Stephen Johnson <steve@thatbytes.co.uk> - 0.0.21
+  * added puppet agent option "ordering" <gigawhat>
+  * added puppet agent option "trusted_node_data"
+  * Beta Suse Support
+2014-06-13 Stephen Johnson <steve@thatbytes.co.uk> - 0.0.22
+  * corrected the package name for FreeBSD <oillogicalimbecile>
+  * Added listen parameter for puppet agent to listen for connections <pythianjoseph>
+  * Added support for dns_alt_names <jyundt>
+  * Fix default encoding in config.ru <dvorak>
+  * Added reportserver parameter for puppet agent to send transaction <pythianjoseph>
+2014-06-25 Stephen Johnson <steve@thatbytes.co.uk> - 0.0.23
+  * Fixed mis quoting for a few variables <lavoiesi>
+  * Add initial support for directory environments <crayfishx>
+2014-09-05 Stephen Johnson <steve@thatbytes.co.uk> - 1.0.0
+  * Need double quotes to interpolate variable <Robin Bowes>
+  * Improve SSL protocol and ciphersuite configuration (security) <Gert van Dijk>
+  * Delint <Mick Pollard>
+  * use the locally scoped puppet_ssldir variable <Mick Pollard>
+  * fix typo in README: s/evn/env/ <Mick Pollard>
+  * Add directory environment support <Craig Dunn>
+  * remove apache custom fragment <Steffen Zieger>
+  * Add 'manual' puppet_run_style, to not manange the agent service. <Gert van Dijk>
+  * Ability to manage the digest_algorithm setting. <Gert van Dijk>

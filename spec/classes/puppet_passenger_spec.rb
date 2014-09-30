@@ -10,6 +10,7 @@ describe 'puppet::passenger', :type => :class do
                 :puppet_ssldir          => '/var/lib/puppet/ssl',
                 :certname               => 'test.test.com',
                 :conf_dir               => '/etc/puppet',
+                :dns_alt_names          => ['puppet'],
         }
         end
     context 'on Debian' do
@@ -22,14 +23,14 @@ describe 'puppet::passenger', :type => :class do
             }
         end
          it {
-                should include_class('apache')
-                should include_class('puppet::params')
-                should include_class('apache::mod::passenger')
-                should include_class('apache::mod::ssl')
+                #should include_class('apache')
+                should contain_class('puppet::params')
+                should contain_class('apache::mod::passenger')
+                should contain_class('apache::mod::ssl')
                 should contain_exec('Certificate_Check').with(
                     :command =>
                       "puppet cert clean #{params[:certname]} ; " +
-                      "puppet certificate --ca-location=local --dns_alt_names=puppet generate #{params[:certname]}" +
+                      "puppet certificate --ca-location=local --dns_alt_names=#{params[:dns_alt_names].join(',')} generate #{params[:certname]}" +
                       " && puppet cert sign --allow-dns-alt-names #{params[:certname]}" +
                       " && puppet certificate --ca-location=local find #{params[:certname]}",
                     :unless  => "/bin/ls #{params[:puppet_ssldir]}/certs/#{params[:certname]}.pem",

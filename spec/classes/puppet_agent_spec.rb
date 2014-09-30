@@ -160,7 +160,6 @@ describe 'puppet::agent', :type => :class do
             end
         end
     end
-
     context 'on RedHat operatingsystems' do
         let(:facts) do
             {
@@ -318,6 +317,131 @@ describe 'puppet::agent', :type => :class do
                     )
                 }
             end
+        end
+    end
+
+    describe 'Ordering' do
+        let(:facts) do
+            {
+                :osfamily        => 'RedHat',
+                :operatingsystem => 'RedHat',
+                :kernel          => 'Linux'
+            }
+        end
+        context 'with ordering set' do
+            let(:params) do
+                {
+                    :puppet_server          => 'test.exaple.com',
+                    :puppet_agent_service   => 'puppet',
+                    :puppet_agent_package   => 'puppet',
+                    :version                => '/etc/puppet/manifests/site.pp',
+                    :puppet_run_style       => 'cron',
+                    :splay                  => 'true',
+                    :environment            => 'production',
+                    :ordering               => 'manifest',
+                    :puppet_run_interval    => 30,
+                    :puppet_server_port     => 8140,
+                    :use_srv_records        => false,
+                }
+            end
+
+            it{
+                should contain_ini_setting('puppetagentordering').with(
+                    :ensure  => 'present',
+                    :section => 'agent',
+                    :setting => 'ordering',
+                    :value   => 'manifest',
+                    :path    => '/etc/puppet/puppet.conf'
+                    )
+            }
+        end
+
+        context 'with ordering not set' do
+            let(:params) do
+                {
+                    :puppet_server          => 'test.exaple.com',
+                    :puppet_agent_service   => 'puppet',
+                    :puppet_agent_package   => 'puppet',
+                    :version                => '/etc/puppet/manifests/site.pp',
+                    :puppet_run_style       => 'cron',
+                    :splay                  => 'true',
+                    :environment            => 'production',
+                    :puppet_run_interval    => 30,
+                    :puppet_server_port     => 8140,
+                    :use_srv_records        => false,
+                }
+            end
+
+            it{
+                should contain_ini_setting('puppetagentordering').with(
+                    :ensure  => 'absent',
+                    :section => 'agent',
+                    :setting => 'ordering',
+                    :path    => '/etc/puppet/puppet.conf'
+                    )
+            }
+        end
+    end
+    describe 'Trusted fact' do
+        let(:facts) do
+            {
+                :osfamily        => 'RedHat',
+                :operatingsystem => 'RedHat',
+                :kernel          => 'Linux'
+            }
+        end
+        context 'with trusted set' do
+            let(:params) do
+                {
+                    :puppet_server          => 'test.exaple.com',
+                    :puppet_agent_service   => 'puppet',
+                    :puppet_agent_package   => 'puppet',
+                    :version                => '/etc/puppet/manifests/site.pp',
+                    :puppet_run_style       => 'cron',
+                    :splay                  => 'true',
+                    :environment            => 'production',
+                    :trusted_node_data      => 'true',
+                    :puppet_run_interval    => 30,
+                    :puppet_server_port     => 8140,
+                    :use_srv_records        => false,
+                }
+            end
+
+            it{
+                should contain_ini_setting('puppetagenttrusted_node_data').with(
+                    :ensure  => 'present',
+                    :section => 'agent',
+                    :setting => 'trusted_node_data',
+                    :value   => 'true',
+                    :path    => '/etc/puppet/puppet.conf'
+                    )
+            }
+        end
+
+        context 'with trusted not set' do
+            let(:params) do
+                {
+                    :puppet_server          => 'test.exaple.com',
+                    :puppet_agent_service   => 'puppet',
+                    :puppet_agent_package   => 'puppet',
+                    :version                => '/etc/puppet/manifests/site.pp',
+                    :puppet_run_style       => 'cron',
+                    :splay                  => 'true',
+                    :environment            => 'production',
+                    :puppet_run_interval    => 30,
+                    :puppet_server_port     => 8140,
+                    :use_srv_records        => false,
+                }
+            end
+
+            it{
+                should contain_ini_setting('puppetagenttrusted_node_data').with(
+                    :ensure  => 'absent',
+                    :section => 'agent',
+                    :setting => 'trusted_node_data',
+                    :path    => '/etc/puppet/puppet.conf'
+                    )
+            }
         end
     end
 end
