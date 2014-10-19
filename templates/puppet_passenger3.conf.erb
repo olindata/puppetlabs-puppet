@@ -2,6 +2,8 @@ PassengerHighPerformance on
 PassengerPoolIdleTime 1500
 # PassengerMaxRequests 1000
 PassengerStatThrottleRate 120
-#RackAutoDetect Off
-#RailsAutoDetect Off
+<% if (@lsbdistcodename != 'trusty') and (@lsbdistcodename != 'Heisenbug') and (@lsbdistcodename != 'Maipo') -%>
+  RackAutoDetect Off
+  RailsAutoDetect Off
+<% end -%>
 PassengerTempDir /var/run/rubygem-passenger

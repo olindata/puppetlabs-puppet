@@ -23,6 +23,7 @@
 #   ['listen']                - If puppet agent should listen for connections
 #   ['reportserver']          - The server to send transaction reports to.
 #   ['digest_algorithm']      - The algorithm to use for file digests.
+#   ['templatedir']           - Template dir, if unset it will remove the setting.
 #
 # Actions:
 # - Install and configures the puppet agent
@@ -54,6 +55,7 @@ class puppet::agent(
   $use_srv_records        = false,
   $srv_domain             = undef,
   $ordering               = undef,
+  $templatedir            = '$confdir/templates',
   $trusted_node_data      = undef,
   $listen                 = false,
   $reportserver           = '$server',
@@ -283,5 +285,22 @@ class puppet::agent(
     ensure  => present,
     setting => 'digest_algorithm',
     value   => $digest_algorithm,
+  }
+  if ($templatedir != undef) and ($templatedir != 'undef')
+  {
+    ini_setting {'puppetagenttemplatedir':
+      ensure  => present,
+      setting => 'templatedir',
+      section => 'main',
+      value   => $templatedir,
+    }
+  }
+  else
+  {
+    ini_setting {'puppetagenttemplatedir':
+      ensure  => absent,
+      setting => 'templatedir',
+      section => 'main',
+    }
   }
 }

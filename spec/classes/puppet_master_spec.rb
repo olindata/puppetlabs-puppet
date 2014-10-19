@@ -18,6 +18,8 @@ describe 'puppet::master', :type => :class do
                 :puppet_master_service  => 'puppetmaster',
                 :modulepath             => '/etc/puppet/modules',
                 :manifest               => '/etc/puppet/manifests/site.pp',
+                :external_nodes         => '/usr/local/bin/puppet_node_classifier',
+                :node_terminus          => 'exec',
                 :autosign               => 'true',
                 :certname               => 'test.example.com',
                 :storeconfigs           => 'true',
@@ -94,6 +96,22 @@ describe 'puppet::master', :type => :class do
                 :value   => params[:manifest],
                 :require => 'File[/etc/puppet/puppet.conf]'
             )
+            should contain_ini_setting('puppetmasterencconfig').with(
+                :ensure  => 'present',
+                :section => 'master',
+                :setting => 'external_nodes',
+                :path    => '/etc/puppet/puppet.conf',
+                :value   => params[:external_nodes],
+                :require => 'File[/etc/puppet/puppet.conf]'
+            )
+            should contain_ini_setting('puppetmasternodeterminus').with(
+                :ensure  => 'present',
+                :section => 'master',
+                :setting => 'node_terminus',
+                :path    => '/etc/puppet/puppet.conf',
+                :value   => params[:node_terminus],
+                :require => 'File[/etc/puppet/puppet.conf]'
+            )
             should contain_ini_setting('puppetmasterautosign').with(
                 :ensure  => 'present',
                 :section => 'master',
@@ -163,6 +181,8 @@ describe 'puppet::master', :type => :class do
                 :puppet_master_service  => 'puppetmaster',
                 :modulepath             => '/etc/puppet/modules',
                 :manifest               => '/etc/puppet/manifests/site.pp',
+                :external_nodes         => '/usr/local/bin/puppet_node_classifier',
+                :node_terminus          => 'exec',
                 :autosign               => 'true',
                 :certname               => 'test.example.com',
                 :storeconfigs           => 'true',
@@ -235,6 +255,22 @@ describe 'puppet::master', :type => :class do
                 :setting => 'manifest',
                 :path    => '/etc/puppet/puppet.conf',
                 :value   => params[:manifest],
+                :require => 'File[/etc/puppet/puppet.conf]'
+            )
+            should contain_ini_setting('puppetmasterencconfig').with(
+                :ensure  => 'present',
+                :section => 'master',
+                :setting => 'external_nodes',
+                :path    => '/etc/puppet/puppet.conf',
+                :value   => params[:external_nodes],
+                :require => 'File[/etc/puppet/puppet.conf]'
+            )
+            should contain_ini_setting('puppetmasternodeterminus').with(
+                :ensure  => 'present',
+                :section => 'master',
+                :setting => 'node_terminus',
+                :path    => '/etc/puppet/puppet.conf',
+                :value   => params[:node_terminus],
                 :require => 'File[/etc/puppet/puppet.conf]'
             )
             should contain_ini_setting('puppetmasterautosign').with(

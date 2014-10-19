@@ -7,6 +7,8 @@
 #  ['group_id']                 - The groupid of the puppet group
 #  ['modulepath']               - Module path to be served by the puppet master
 #  ['manifest']                 - Manifest path
+#  ['external_nodes']           - ENC script path
+#  ['node_terminus']            - Node terminus setting, is overridden to 'exec' if external_nodes is set
 #  ['hiera_config']             - Hiera config file path
 #  ['environments']             - Which environment method (directory or config)
 #  ['environmentpath']          - Puppet environment base path (use with environments directory)
@@ -55,6 +57,8 @@ class puppet::master (
   $group_id                   = undef,
   $modulepath                 = $::puppet::params::modulepath,
   $manifest                   = $::puppet::params::manifest,
+  $external_nodes             = undef,
+  $node_terminus              = undef,
   $hiera_config               = $::puppet::params::hiera_config,
   $environmentpath            = $::puppet::params::environmentpath,
   $environments               = $::puppet::params::environments,
@@ -64,7 +68,7 @@ class puppet::master (
   $storeconfigs_dbport        = $::puppet::params::storeconfigs_dbport,
   $certname                   = $::fqdn,
   $autosign                   = false,
-  $reporturl                  = 'UNSET',
+  $reporturl                  = undef,
   $puppet_ssldir              = $::puppet::params::puppet_ssldir,
   $puppet_docroot             = $::puppet::params::puppet_docroot,
   $puppet_vardir              = $::puppet::params::puppet_vardir,
@@ -225,6 +229,27 @@ class puppet::master (
     value   => $environmentpath,
   }
 
+  if $external_nodes != undef {
+    ini_setting {'puppetmasterencconfig':
+      ensure  => present,
+      setting => 'external_nodes',
+      value   => $external_nodes,
+    }
+
+    ini_setting {'puppetmasternodeterminus':
+      ensure  => present,
+      setting => 'node_terminus',
+      value   => 'exec'
+    }
+  }
+  elsif $node_terminus != undef {
+    ini_setting {'puppetmasternodeterminus':
+      ensure  => present,
+      setting => 'node_terminus',
+      value   => $node_terminus
+    }
+  }
+
   ini_setting {'puppetmasterhieraconfig':
     ensure  => present,
     setting => 'hiera_config',
@@ -261,7 +286,7 @@ class puppet::master (
     value   => $parser,
   }
 
-  if $reporturl != 'UNSET'{
+  if $reporturl != undef {
     ini_setting {'puppetmasterreport':
       ensure  => present,
       setting => 'reporturl',

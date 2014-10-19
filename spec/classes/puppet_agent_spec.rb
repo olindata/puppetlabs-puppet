@@ -444,4 +444,66 @@ describe 'puppet::agent', :type => :class do
             }
         end
     end
+    describe 'Trusted fact' do
+        let(:facts) do
+            {
+                :osfamily        => 'RedHat',
+                :operatingsystem => 'RedHat',
+                :kernel          => 'Linux'
+            }
+        end
+    context 'with templatedir set' do
+        let(:params) do
+            {
+                :puppet_server          => 'test.exaple.com',
+                :puppet_agent_service   => 'puppet',
+                :puppet_agent_package   => 'puppet',
+                :version                => '/etc/puppet/manifests/site.pp',
+                :puppet_run_style       => 'cron',
+                :splay                  => 'true',
+                :environment            => 'production',
+                :puppet_run_interval    => 30,
+                :puppet_server_port     => 8140,
+                :use_srv_records        => false,
+            }
+        end
+
+        it{
+            should contain_ini_setting('puppetagenttemplatedir').with(
+                :ensure  => 'present',
+                :section => 'main',
+                :setting => 'templatedir',
+                :value   => '$confdir/templates',
+                :path    => '/etc/puppet/puppet.conf'
+                )
+        }
+    end
+
+    context 'with templatedir not set' do
+        let(:params) do
+            {
+                :puppet_server          => 'test.exaple.com',
+                :puppet_agent_service   => 'puppet',
+                :puppet_agent_package   => 'puppet',
+                :version                => '/etc/puppet/manifests/site.pp',
+                :puppet_run_style       => 'cron',
+                :splay                  => 'true',
+                :environment            => 'production',
+                :puppet_run_interval    => 30,
+                :puppet_server_port     => 8140,
+                :use_srv_records        => false,
+                :templatedir            => 'undef'
+            }
+        end
+
+        it{
+            should contain_ini_setting('puppetagenttemplatedir').with(
+                :ensure  => 'absent',
+                :section => 'main',
+                :setting => 'templatedir',
+                :path    => '/etc/puppet/puppet.conf'
+                )
+        }
+    end
+  end
 end

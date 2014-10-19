@@ -58,3 +58,6 @@
   * remove apache custom fragment <Steffen Zieger>
   * Add 'manual' puppet_run_style, to not manange the agent service. <Gert van Dijk>
   * Ability to manage the digest_algorithm setting. <Gert van Dijk>
+2014-10-10 Stephen Johnson <steve@thatbytes.co.uk> - 1.1.0
+  * Add new templatedir paramter to agent
+  * Add external_nodes and node_terminus <Jesi Major>
