@@ -13,7 +13,7 @@
 class puppet::params {
 
   $puppet_server                    = 'puppet'
-  $modulepath                       = '/etc/puppet/modules'
+  $modulepath                       = '/etc/puppet/modules/common:/etc/puppet/modules/custom'
   $puppet_user                      = 'puppet'
   $puppet_group                     = 'puppet'
   $storeconfigs_dbserver            = $::fqdn
